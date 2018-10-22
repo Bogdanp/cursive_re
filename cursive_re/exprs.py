@@ -27,7 +27,7 @@ class beginning_of_line(expr):
     Examples:
 
       >>> str(beginning_of_line())
-      ... "^"
+      '^'
     """
 
     def __str__(self) -> str:
@@ -40,7 +40,7 @@ class end_of_line:
     Examples:
 
       >>> str(end_of_line())
-      ... "$"
+      '$'
     """
 
     def __str__(self) -> str:
@@ -53,7 +53,7 @@ class anything(expr):
     Examples:
 
       >>> str(anything())
-      ... "."
+      '.'
     """
 
     def __str__(self) -> str:
@@ -65,8 +65,8 @@ class literal(expr):
 
     Examples:
 
-      >>> str(literal("\A\w"))
-      ... "\A\w"
+      >>> str(literal(r"\A\w"))
+      '\\A\\w'
     """
 
     def __init__(self, literal: str) -> None:
@@ -82,7 +82,7 @@ class text(expr):
     Examples:
 
       >>> str(text("abc"))
-      ... "abc"
+      'abc'
     """
 
     def __init__(self, text: str) -> None:
@@ -98,17 +98,17 @@ class any_of(expr):
     Examples:
 
       >>> str(any_of("ab"))
-      ... "[ab]"
+      '[ab]'
 
       >>> str(any_of(text("ab")))
-      ... "[ab]"
+      '[ab]'
 
       >>> str(any_of(text("[]")))
-      ... "[\\[\\]]"
+      '[\\[\\]]'
     """
 
     def __init__(self, e: Union[str, expr]) -> None:
-        self.expr = text(e) if isinstance(e, str) else e
+        self.expr = maybe_text(e)
 
     def __str__(self) -> str:
         return f"[{self.expr}]"
@@ -119,15 +119,18 @@ class none_of(expr):
 
     Examples:
 
+      >>> str(none_of("ab"))
+      '[^ab]'
+
       >>> str(none_of(text("ab")))
-      ... "[^ab]"
+      '[^ab]'
 
       >>> str(none_of(text("[]")))
-      ... "[^\\[\\]]"
+      '[^\\[\\]]'
     """
 
     def __init__(self, e: Union[str, expr]) -> None:
-        self.expr = text(e) if isinstance(e, str) else e
+        self.expr = maybe_text(e)
 
     def __str__(self) -> str:
         return f"[^{self.expr}]"
@@ -139,7 +142,7 @@ class in_range(expr):
     Examples:
 
       >>> str(in_range("a", "z"))
-      ... "a-z"
+      'a-z'
     """
 
     def __init__(self, lo: str, hi: str) -> None:
@@ -155,16 +158,21 @@ class zero_or_more(expr):
 
     Examples:
 
+      >>> str(zero_or_more("a"))
+      '(?:a)*'
+
       >>> str(zero_or_more(text("a")))
-      ... "a*"
+      '(?:a)*'
+
+      >>> str(zero_or_more(text("abc")))
+      '(?:abc)*'
 
       >>> str(zero_or_more(group(text("abc"))))
-      ... "(abc)*"
+      '(abc)*'
     """
 
-    def __init__(self, e: expr) -> None:
-        assert isinstance(e, expr), "zero_or_more must be passed an expr"
-        self.expr = maybe_group(e)
+    def __init__(self, e: Union[str, expr]) -> None:
+        self.expr = maybe_group(maybe_text(e))
 
     def __str__(self) -> str:
         return f"{self.expr}*"
@@ -175,15 +183,18 @@ class one_or_more(expr):
 
     Examples:
 
+      >>> str(one_or_more("a"))
+      '(?:a)+'
+
       >>> str(one_or_more(text("a")))
-      ... "a+"
+      '(?:a)+'
 
       >>> str(one_or_more(group(text("abc"))))
-      ... "(abc)+"
+      '(abc)+'
     """
 
-    def __init__(self, e: expr) -> None:
-        self.expr = maybe_group(e)
+    def __init__(self, e: Union[str, expr]) -> None:
+        self.expr = maybe_group(maybe_text(e))
 
     def __str__(self) -> str:
         return f"{self.expr}+"
@@ -194,13 +205,21 @@ class maybe(expr):
 
     Examples:
 
+      >>> str(maybe("abc"))
+      '(?:abc)?'
+
       >>> str(maybe(text("abc")))
-      ... "(?:abc)?"
+      '(?:abc)?'
+
+      >>> str(maybe(group(text("abc"))))
+      '(abc)?'
+
+      >>> str(maybe(any_of("abc")))
+      '[abc]?'
     """
 
-    def __init__(self, e: expr) -> None:
-        assert isinstance(e, expr), "maybe must be passed an expr"
-        self.expr = maybe_group(e)
+    def __init__(self, e: Union[str, expr]) -> None:
+        self.expr = maybe_group(maybe_text(e))
 
     def __str__(self) -> str:
         return f"{self.expr}?"
@@ -211,28 +230,30 @@ class repeated(expr):
 
     Examples:
 
+      >>> str(repeated("a", exactly=5))
+      '(?:a){5}'
+
       >>> str(repeated(text("a"), exactly=5))
-      ... "(?:a){5}"
+      '(?:a){5}'
 
       >>> str(repeated(text("a"), at_least=1))
-      ... "(?:a){1,}"
+      '(?:a){1,}'
 
       >>> str(repeated(text("a"), at_most=5))
-      ... "(?:a){0,5}"
+      '(?:a){0,5}'
 
       >>> str(repeated(text("a"), at_least=2, at_most=5, greedy=False))
-      ... "(?:a){2,5}?"
+      '(?:a){2,5}?'
     """
 
     def __init__(
-            self, e: expr, *,
+            self, e: Union[str, expr], *,
             exactly: Optional[int] = None,
             at_least: int = 0,
             at_most: Optional[int] = None,
             greedy: bool = True,
     ) -> None:
-        assert isinstance(e, expr), "repeated must be passed an expr"
-        self.expr = maybe_group(e)
+        self.expr = maybe_group(maybe_text(e))
         self.exactly = exactly
         self.at_least = at_least
         self.at_most = at_most
@@ -291,10 +312,10 @@ class group(expr):
     Examples:
 
       >>> str(group(text("a")))
-      ... "(a)"
+      '(a)'
 
       >>> str(group(any_of("abc"), name="chars"))
-      ... "(?P<chars>[abc])"
+      '(?P<chars>[abc])'
     """
 
     def __init__(self, e: expr, *, name: Optional[str] = None, capture: bool = True) -> None:
@@ -312,6 +333,10 @@ class group(expr):
 
 
 GROUPLIKES = (alternative, group, any_of, none_of)
+
+
+def maybe_text(e: Union[str, expr]) -> expr:
+    return e if isinstance(e, expr) else text(e)
 
 
 def maybe_group(e: expr) -> expr:
