@@ -66,7 +66,7 @@ class literal(expr):
     Examples:
 
       >>> str(literal(r"\A\w"))
-      '\\A\\w'
+      '\\\\A\\\\w'
     """
 
     def __init__(self, literal: str) -> None:
@@ -104,7 +104,7 @@ class any_of(expr):
       '[ab]'
 
       >>> str(any_of(text("[]")))
-      '[\\[\\]]'
+      '[\\\\[\\\\]]'
     """
 
     def __init__(self, e: Union[str, expr]) -> None:
@@ -126,7 +126,7 @@ class none_of(expr):
       '[^ab]'
 
       >>> str(none_of(text("[]")))
-      '[^\\[\\]]'
+      '[^\\\\[\\\\]]'
     """
 
     def __init__(self, e: Union[str, expr]) -> None:

@@ -46,7 +46,6 @@ True
 '(?P<scheme>[a-z]+)://(?P<domain>[a-z0-9\-]+(?:\.[a-z0-9\-]+)*)(?P<path>(?:/[^/]*)*)'
 ```
 
-
 ## Reference
 ### `cursive_re.compile`
 
@@ -86,7 +85,7 @@ Inserts a literal regular expression.
 Examples:
 
     >>> str(literal(r"\A\w"))
-    '\A\w'
+    '\\A\\w'
 
 ### `cursive_re.text`
 
@@ -110,7 +109,7 @@ Examples:
     '[ab]'
 
     >>> str(any_of(text("[]")))
-    '[\[\]]'
+    '[\\[\\]]'
 
 ### `cursive_re.none_of`
 
@@ -125,7 +124,7 @@ Examples:
     '[^ab]'
 
     >>> str(none_of(text("[]")))
-    '[^\[\]]'
+    '[^\\[\\]]'
 
 ### `cursive_re.in_range`
 
