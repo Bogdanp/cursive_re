@@ -6,26 +6,39 @@ import cursive_re
 
 
 def main():
-    print()
-    print("## Reference")
-    for name in cursive_re.__all__:
-        print(f"### `cursive_re.{name}`")
-        print()
+    with open("README.md", "r") as f:
+        readme_lines = []
+        for line in f:
+            if line.startswith("## Reference"):
+                break
 
-        value = getattr(cursive_re, name)
-        doc = value.__doc__
-        doc_first_line, *doc_rest_lines = doc.split("\n")
-        doc_dedented = doc_first_line + "\n" + textwrap.dedent("\n".join(doc_rest_lines))
+            readme_lines.append(line)
 
-        example_marker_passed = False
-        for line in doc_dedented.split("\n"):
-            if "Examples:" in line:
-                example_marker_passed = True
+    with open("README.md", "w") as f:
+        f.write("".join(readme_lines).rstrip())
+        f.write("\n\n")
+        f.write("## Reference")
 
-            elif example_marker_passed and line.strip():
-                line = f"  {line}"
+        for name in cursive_re.__all__:
+            f.write("\n\n")
+            f.write(f"### `cursive_re.{name}`")
+            f.write("\n")
 
-            print(line)
+            value = getattr(cursive_re, name)
+            doc = value.__doc__
+            doc_first_line, *doc_rest_lines = doc.split("\n")
+            doc_dedented = doc_first_line + "\n" + textwrap.dedent("\n".join(doc_rest_lines))
+
+            example_marker_passed = False
+            for line in doc_dedented.split("\n"):
+                if "Examples:" in line:
+                    example_marker_passed = True
+
+                elif example_marker_passed and line.strip():
+                    line = f"  {line}"
+
+                f.write("\n")
+                f.write(line)
     return 0
 
 
