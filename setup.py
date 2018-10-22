@@ -46,7 +46,7 @@ setup(
     version=version,
     author="Bogdan Popa",
     author_email="bogdan@defn.io",
-    description="Beautiful regular expressions for Python 3.6 and up.",
+    description="Readable regular expressions for Python 3.6 and up.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=["cursive_re"],

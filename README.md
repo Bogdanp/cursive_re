@@ -1,6 +1,6 @@
 # cursive_re
 
-Beautiful regular expressions for Python 3.6 and up.
+Readable regular expressions for Python 3.6 and up.
 
 ## Installation
 
