@@ -1,5 +1,5 @@
 import re
-from typing import List, Optional, Pattern, Union
+from typing import Optional, Pattern, Union
 
 
 def compile(expr: "expr", flags: int = 0) -> Pattern[str]:
@@ -10,11 +10,11 @@ def compile(expr: "expr", flags: int = 0) -> Pattern[str]:
 
 class expr:
     def __add__(self, other: "expr") -> "expr":
-        return sequence([self]) + other
+        return sequence(self) + other
 
     def __or__(self, other: "expr") -> "expr":
         if isinstance(other, alternative):
-            return alternative(self, *other.exprs)
+            return alternative(self) | other
         return alternative(self, other)
 
     def __str__(self) -> str:  # pragma: no cover
@@ -25,6 +25,7 @@ class beginning_of_line(expr):
     """Matches the beginning of a line.
 
     Examples:
+
       >>> str(beginning_of_line())
       ... "^"
     """
@@ -37,6 +38,7 @@ class end_of_line:
     """Matches the end of a line.
 
     Examples:
+
       >>> str(end_of_line())
       ... "$"
     """
@@ -49,6 +51,7 @@ class anything(expr):
     """Matches any character.
 
     Examples:
+
       >>> str(anything())
       ... "."
     """
@@ -61,6 +64,7 @@ class literal(expr):
     """Inserts a literal regular expression.
 
     Examples:
+
       >>> str(literal("\A\w"))
       ... "\A\w"
     """
@@ -76,6 +80,7 @@ class text(expr):
     """Matches the given string exactly, escaping any special characters.
 
     Examples:
+
       >>> str(text("abc"))
       ... "abc"
     """
@@ -91,6 +96,7 @@ class any_of(expr):
     """Matches any of the given characters.
 
     Examples:
+
       >>> str(any_of("ab"))
       ... "[ab]"
 
@@ -112,6 +118,7 @@ class none_of(expr):
     """Matches none of the given characters.
 
     Examples:
+
       >>> str(none_of(text("ab")))
       ... "[^ab]"
 
@@ -130,6 +137,7 @@ class in_range(expr):
     """Matches a character in the given range.
 
     Examples:
+
       >>> str(in_range("a", "z"))
       ... "a-z"
     """
@@ -146,6 +154,7 @@ class zero_or_more(expr):
     """Matches zero or more of the given expr.
 
     Examples:
+
       >>> str(zero_or_more(text("a")))
       ... "a*"
 
@@ -155,7 +164,7 @@ class zero_or_more(expr):
 
     def __init__(self, e: expr) -> None:
         assert isinstance(e, expr), "zero_or_more must be passed an expr"
-        self.expr = e if isinstance(e, GROUPLIKES) else group(e, capture=False)
+        self.expr = maybe_group(e)
 
     def __str__(self) -> str:
         return f"{self.expr}*"
@@ -165,6 +174,7 @@ class one_or_more(expr):
     """Matches one or more of the given expr.
 
     Examples:
+
       >>> str(one_or_more(text("a")))
       ... "a+"
 
@@ -173,7 +183,7 @@ class one_or_more(expr):
     """
 
     def __init__(self, e: expr) -> None:
-        self.expr = e if isinstance(e, GROUPLIKES) else group(e, capture=False)
+        self.expr = maybe_group(e)
 
     def __str__(self) -> str:
         return f"{self.expr}+"
@@ -182,14 +192,15 @@ class one_or_more(expr):
 class maybe(expr):
     """Matches an expr if present.
 
-    Example:
+    Examples:
+
       >>> str(maybe(text("abc")))
       ... "(?:abc)?"
     """
 
     def __init__(self, e: expr) -> None:
         assert isinstance(e, expr), "maybe must be passed an expr"
-        self.expr = e if isinstance(e, GROUPLIKES) else group(e, capture=False)
+        self.expr = maybe_group(e)
 
     def __str__(self) -> str:
         return f"{self.expr}?"
@@ -198,7 +209,8 @@ class maybe(expr):
 class repeated(expr):
     """Matches an expr repeated an exact number of times.
 
-    Example:
+    Examples:
+
       >>> str(repeated(text("a"), exactly=5))
       ... "(?:a){5}"
 
@@ -220,7 +232,7 @@ class repeated(expr):
             greedy: bool = True,
     ) -> None:
         assert isinstance(e, expr), "repeated must be passed an expr"
-        self.expr = e if isinstance(e, GROUPLIKES) else group(e, capture=False)
+        self.expr = maybe_group(e)
         self.exactly = exactly
         self.at_least = at_least
         self.at_most = at_most
@@ -245,7 +257,12 @@ class alternative(expr):
     """
 
     def __init__(self, *exprs: expr) -> None:
-        self.exprs = list(exprs)
+        self.exprs = [maybe_group(e) for e in exprs]
+
+    def __or__(self, other: "expr") -> "expr":
+        if isinstance(other, alternative):
+            return alternative(*self.exprs, *other.exprs)
+        return alternative(*self.exprs, other)
 
     def __str__(self) -> str:
         return "|".join(str(expr) for expr in self.exprs)
@@ -255,13 +272,13 @@ class sequence(expr):
     """Groups the given set of exprs in order.
     """
 
-    def __init__(self, exprs: List[expr]) -> None:
+    def __init__(self, *exprs: expr) -> None:
         self.exprs = exprs
 
     def __add__(self, other: expr) -> expr:
         if isinstance(other, sequence):
-            return sequence(self.exprs + other.exprs)
-        return sequence(self.exprs + [other])
+            return sequence(*self.exprs, *other.exprs)
+        return sequence(*self.exprs, other)
 
     def __str__(self) -> str:
         return "".join(str(expr) for expr in self.exprs)
@@ -272,6 +289,7 @@ class group(expr):
     is performed.
 
     Examples:
+
       >>> str(group(text("a")))
       ... "(a)"
 
@@ -293,4 +311,8 @@ class group(expr):
         return f"({self.expr})"
 
 
-GROUPLIKES = (group, any_of, none_of)
+GROUPLIKES = (alternative, group, any_of, none_of)
+
+
+def maybe_group(e: expr) -> expr:
+    return e if isinstance(e, GROUPLIKES) else group(e, capture=False)

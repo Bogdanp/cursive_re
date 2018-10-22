@@ -49,12 +49,12 @@ from cursive_re import (
     (repeated(text("a"), at_least=1, at_most=2), "(?:a){1,2}"),
     (repeated(text("a"), at_least=1, at_most=2, greedy=False), "(?:a){1,2}?"),
 
-    (alternative(text("a"), text("b")), "a|b"),
-    (alternative(any_of("abc"), text("d")), "[abc]|d"),
-    (alternative(text("a"), alternative(text("b"), text("c"))), "a|b|c"),
-    (text("a") | text("b") | text("c"), "a|b|c"),
-    (text("a") | (text("b") | text("c")), "a|b|c"),
-    (literal("[]") | text("b"), "[]|b"),
+    (alternative(text("a"), text("b")), "(?:a)|(?:b)"),
+    (alternative(any_of("abc"), text("d")), "[abc]|(?:d)"),
+    (alternative(text("a"), alternative(text("b"), text("c"))), "(?:a)|(?:b)|(?:c)"),
+    (text("a") | text("b") | text("c"), "(?:a)|(?:b)|(?:c)"),
+    (text("a") | (text("b") | text("c")), "(?:a)|(?:b)|(?:c)"),
+    (literal("[]") | text("b"), "(?:[])|(?:b)"),
 
     (group(text("a")), "(a)"),
     (group(text("a"), name="foo"), "(?P<foo>a)"),
