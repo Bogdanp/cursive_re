@@ -13,12 +13,12 @@ Beautiful regular expressions for Python 3.6 and up.
 
 >>> hash = text("#")
 
->>> hexdigit = any_of(in_range("0", "9"), in_range("a-f") + in_range("A-F"))
+>>> hexdigit = any_of(in_range("0", "9") + in_range("a-f") + in_range("A-F"))
 
 >>> hexcolor = (
 ...   beginning_of_line() + hash +
 ...   group(repeated(hexdigit, exactly=6) | repeated(hexdigit, exactly=3)) +
-...   end_of_line(),
+...   end_of_line()
 ... )
 
 >>> str(hexcolor)
