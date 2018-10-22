@@ -1,16 +1,8 @@
 #!/usr/bin/env python
-import re
 import sys
 import textwrap
 
 import cursive_re
-
-example_line_re = cursive_re.compile(
-    cursive_re.beginning_of_line() +
-    cursive_re.one_or_more(cursive_re.text(" ")) +
-    cursive_re.group((cursive_re.text(">>>") | cursive_re.text("..."))),
-    re.MULTILINE
-)
 
 
 def main():
@@ -24,8 +16,16 @@ def main():
         doc = value.__doc__
         doc_first_line, *doc_rest_lines = doc.split("\n")
         doc_dedented = doc_first_line + "\n" + textwrap.dedent("\n".join(doc_rest_lines))
-        doc_dedented = example_line_re.sub(r"    \1", doc_dedented)
-        print(doc_dedented)
+
+        example_marker_passed = False
+        for line in doc_dedented.split("\n"):
+            if "Examples:" in line:
+                example_marker_passed = True
+
+            elif example_marker_passed and line.strip():
+                line = f"  {line}"
+
+            print(line)
     return 0
 
 
