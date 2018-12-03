@@ -34,7 +34,7 @@ class beginning_of_line(expr):
         return "^"
 
 
-class end_of_line:
+class end_of_line(expr):
     """Matches the end of a line.
 
     Examples:
