@@ -46,6 +46,7 @@ setup(
     version=version,
     author="Bogdan Popa",
     author_email="bogdan@defn.io",
+    url="https://github.com/Bogdanp/cursive_re",
     description="Readable regular expressions for Python 3.6 and up.",
     long_description=long_description,
     long_description_content_type="text/markdown",
