@@ -19,10 +19,10 @@ Readable regular expressions for Python 3.6 and up.
 ...     end_of_line()
 ... )
 >>> str(hexcolor)
-'^\\#([a-f0-9]{6}|[a-f0-9]{3})$'
+'^\\#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$'
 
 >>> hexcolor_re = compile(hexcolor)
-re.compile('^\\#([a-f0-9]{6}|[a-f0-9]{3})$')
+re.compile('^\\#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$')
 
 >>> hexcolor_re.match('#fff')
 <re.Match object; span=(0, 4), match='#fff'>
